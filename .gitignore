@@ -1,0 +1,5 @@
+.env
+node_modules/
+# contém o CONTROL_TOKEN embutido — versionar só o .example
+trashtalk.ahk
+trashtalk.exe

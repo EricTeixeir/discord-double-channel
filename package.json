@@ -1,0 +1,17 @@
+{
+  "name": "cs-trashtalk-bot",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "@discordjs/voice": "^0.19.2",
+    "libsodium-wrappers": "^0.7.15",
+    "opusscript": "^0.0.8",
+    "prism-media": "^1.3.5",
+    "dotenv": "^16.4.5"
+  }
+}

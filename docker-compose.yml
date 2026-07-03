@@ -1,0 +1,29 @@
+services:
+  csbot:
+    build: .
+    container_name: cs-trashtalk-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    # Única porta exposta: controle do relay por hotkey, restrita a 127.0.0.1
+    # (só a sua própria máquina acessa). O resto é conexão de saída
+    # (gateway websocket + UDP de voz) - não precisa de IP público nem VPS.
+    # CONTROL_BIND controla quem alcança a porta de controle:
+    #   127.0.0.1 (padrão) = só a própria máquina
+    #   0.0.0.0 (na VPS)   = aceita conexões externas (protegidas pelo CONTROL_TOKEN)
+    ports:
+      - "${CONTROL_BIND:-127.0.0.1}:3123:3123"
+
+  # Túnel opcional para controlar o relay de OUTRO PC, sem mexer no roteador.
+  # Subir com:  docker compose --profile tunnel up -d
+  # A URL pública (aleatória, muda a cada recriação do container) aparece em:
+  #   docker compose logs tunnel
+  # O acesso continua protegido pelo CONTROL_TOKEN exigido pelo csbot.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cs-trashtalk-tunnel
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate --url http://csbot:3123
+    depends_on:
+      - csbot
