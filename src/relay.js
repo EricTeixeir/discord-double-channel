@@ -17,9 +17,40 @@ const SILENCE_FRAME = Buffer.alloc(FRAME_BYTES);
 let relayActive = false;
 const relayEvents = new EventEmitter();
 
-export function toggleRelay() {
-  relayActive = !relayActive;
+// Desligamento automático: o relay nunca fica ligado mais que este tempo.
+// Configurável via RELAY_AUTO_OFF_SECONDS (0 desativa o automático).
+const AUTO_OFF_MS = resolveAutoOffMs();
+let autoOffTimer = null;
+
+function resolveAutoOffMs() {
+  const raw = process.env.RELAY_AUTO_OFF_SECONDS;
+  if (raw === undefined || raw === '') return 20_000;
+  const seconds = Number(raw);
+  if (!Number.isInteger(seconds) || seconds < 0) {
+    console.error(`[relay] RELAY_AUTO_OFF_SECONDS inválido: "${raw}" — use um inteiro >= 0 (0 desativa)`);
+    process.exit(1);
+  }
+  return seconds * 1000;
+}
+
+function setRelayActive(active) {
+  if (relayActive === active) return;
+  relayActive = active;
+
+  clearTimeout(autoOffTimer);
+  autoOffTimer = null;
+  if (active && AUTO_OFF_MS > 0) {
+    autoOffTimer = setTimeout(() => {
+      console.log(`[relay] desligado automaticamente após ${AUTO_OFF_MS / 1000}s`);
+      setRelayActive(false);
+    }, AUTO_OFF_MS);
+  }
+
   relayEvents.emit('change', relayActive);
+}
+
+export function toggleRelay() {
+  setRelayActive(!relayActive);
 }
 export function isRelayActive() { return relayActive; }
 

@@ -59,6 +59,7 @@ cp .env.example .env
 | `CHANNEL_B_ID` | ID do canal de voz do Time B |
 | `CONTROL_TOKEN` | Senha do controle por hotkey — gere com `openssl rand -hex 24` |
 | `CONTROL_BIND` | Opcional. `127.0.0.1` (padrão, só a própria máquina) ou `0.0.0.0` (VPS, aceita F8 de fora) |
+| `RELAY_AUTO_OFF_SECONDS` | Opcional. Desliga o relay sozinho após N segundos ligado (padrão: `20`; `0` desativa o automático) |
 
 ### 3. Subir
 
@@ -80,6 +81,10 @@ docker compose logs -f csbot   # deve mostrar "conectado aos dois canais"
   4. Para iniciar com o Windows: atalho do arquivo em `Win+R` → `shell:startup`.
 
 O estado é um só: botão do Discord e F8 controlam a mesma chave, de qualquer origem.
+
+O relay **desliga sozinho após 20 segundos** ligado (pensado para o timing de fim de
+round) — apertar de novo antes disso desliga na hora. O tempo é configurável via
+`RELAY_AUTO_OFF_SECONDS`.
 
 ## Deploy na VPS
 
