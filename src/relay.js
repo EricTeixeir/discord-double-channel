@@ -140,7 +140,18 @@ function wireDirection(botIds, sourceConn, targetConn) {
     player.stop();
   };
 
-  relayEvents.on('change', (active) => (active ? startOutput() : stopOutput()));
+  relayEvents.on('change', (active) => {
+    if (!active) {
+      stopOutput();
+      return;
+    }
+    startOutput();
+    // Quem já estava NO MEIO de uma fala quando o relay ligou não dispara
+    // outro evento 'start' até pausar — assina esses imediatamente.
+    for (const userId of sourceConn.receiver.speaking.users.keys()) {
+      subscribeUser(userId);
+    }
+  });
   if (relayActive) startOutput();
 
   // Enquanto ativo, sempre escreve um frame por tick (mix ou silêncio): o
@@ -152,9 +163,8 @@ function wireDirection(botIds, sourceConn, targetConn) {
     output.write(frame ?? SILENCE_FRAME);
   });
 
-  sourceConn.receiver.speaking.on('start', (userId) => {
+  const subscribeUser = (userId) => {
     if (botIds.has(userId)) return; // nunca capturar os próprios bots
-    if (!relayActive) return;
     if (mixer.has(userId)) return; // já assinado: não duplicar decoder
 
     const opusStream = sourceConn.receiver.subscribe(userId, {
@@ -166,6 +176,11 @@ function wireDirection(botIds, sourceConn, targetConn) {
     const pcmStream = opusStream.pipe(decoder);
 
     mixer.addSource(userId, pcmStream);
+  };
+
+  sourceConn.receiver.speaking.on('start', (userId) => {
+    if (!relayActive) return;
+    subscribeUser(userId);
   });
 
   sourceConn.receiver.speaking.on('end', (userId) => {
