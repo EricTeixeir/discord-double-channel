@@ -4,9 +4,11 @@
 ; F8 liga/desliga o relay (funciona com o CS em tela cheia).
 ; Para trocar a tecla, mude o "F8::" abaixo (ex.: "F9::", "^!t::" = Ctrl+Alt+T).
 ;
+; Feedback é só sonoro (o aviso "de verdade" toca dentro do canal de voz):
+;   beep agudo = ligou | beep grave = desligou | beep longo baixo = erro
+;
 ; NO PC ONDE O BOT RODA: deixe baseUrl como está (127.0.0.1).
-; EM OUTRO PC: troque baseUrl pela URL do túnel (docker compose logs tunnel),
-;              ex.: baseUrl := "https://alguma-coisa.trycloudflare.com"
+; EM OUTRO PC: troque baseUrl pela URL/IP do servidor do bot.
 ; O token abaixo é a senha do controle — tem que ser igual ao CONTROL_TOKEN
 ; do .env. Não compartilhe fora do grupo.
 ; ============================================================
@@ -21,21 +23,15 @@ F8:: {
         req.SetRequestHeader("Authorization", "Bearer " token)
         req.SetTimeouts(3000, 3000, 3000, 3000)
         req.Send()
-        if (req.Status = 401) {
-            SoundBeep(200, 400)
-            TrayTip("Trash Talk", "Token errado — confira o CONTROL_TOKEN do .env", "Icon!")
+        if (req.Status != 200) {
+            SoundBeep(200, 400)   ; erro (token errado ou resposta inesperada)
             return
         }
-        ativo := InStr(req.ResponseText, "true") > 0
-        if (ativo) {
-            SoundBeep(880, 120)   ; beep agudo = LIGOU
-            TrayTip("Trash Talk", "Relay ATIVO — os times estão se ouvindo", "Iconi")
-        } else {
-            SoundBeep(440, 120)   ; beep grave = desligou
-            TrayTip("Trash Talk", "Relay desligado", "Iconi")
-        }
+        if (InStr(req.ResponseText, "true") > 0)
+            SoundBeep(880, 120)   ; ligou
+        else
+            SoundBeep(440, 120)   ; desligou
     } catch {
-        SoundBeep(200, 400)       ; beep bem grave = erro
-        TrayTip("Trash Talk", "Não consegui falar com o bot. Ele está rodando? (docker compose up -d)", "Icon!")
+        SoundBeep(200, 400)       ; erro (bot fora do ar / sem rede)
     }
 }
