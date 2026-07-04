@@ -1,15 +1,16 @@
+// Config base: usada pelo editor, pelo typecheck (npm run typecheck) e pelo
+// Vitest. Cobre src/ E tests/, sem emitir nada. O build de produção usa o
+// tsconfig.build.json, que só inclui src/.
 {
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "src",
-    "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "sourceMap": true
+    "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "tests", "vitest.config.ts"]
 }

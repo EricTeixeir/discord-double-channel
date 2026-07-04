@@ -18,7 +18,8 @@ function tokenMatches(provided: string): boolean {
   return timingSafeEqual(a, b);
 }
 
-export function startControlServer(): void {
+// Retorna o servidor para quem precisar fechá-lo (os testes usam isso).
+export function startControlServer(): http.Server {
   const server = http.createServer((req, res) => {
     const sendJson = (status: number, body: Record<string, unknown>): void => {
       res.writeHead(status, { 'Content-Type': 'application/json' });
@@ -53,4 +54,6 @@ export function startControlServer(): void {
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`[control] servidor de controle ouvindo na porta ${PORT}`);
   });
+
+  return server;
 }

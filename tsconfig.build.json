@@ -1,0 +1,13 @@
+// Build de produção: compila só o código de src/ para dist/ — os testes
+// co-locados (*.test.ts) ficam de fora do emit e da imagem Docker.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
+}

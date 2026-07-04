@@ -90,6 +90,20 @@ Todos no canal sabem quando estão sendo ouvidos: ao abrir, os bots tocam um **t
 subindo** nos dois canais; ao fechar (manual ou automático), um **toque descendo** —
 além do anel verde de fala aceso enquanto estiver ativo.
 
+## Desenvolvimento
+
+O código-fonte é TypeScript (`src/`), compilado para `dist/` no build da imagem Docker.
+
+```bash
+pnpm install       # instala dependências (inclui as de desenvolvimento)
+pnpm test          # roda os testes unitários (Vitest)
+pnpm run typecheck # checagem de tipos de src/ + tests/
+pnpm run build     # compila src/ -> dist/ (o Docker faz isso sozinho)
+```
+
+Os testes não tocam a API do Discord nem leem o seu `.env` — todos os valores
+sensíveis são substituídos por fictícios em `tests/setup.ts`.
+
 ## Deploy na VPS
 
 ```bash
