@@ -86,6 +86,10 @@ O relay **desliga sozinho após 20 segundos** ligado (pensado para o timing de f
 round) — apertar de novo antes disso desliga na hora. O tempo é configurável via
 `RELAY_AUTO_OFF_SECONDS`.
 
+Todos no canal sabem quando estão sendo ouvidos: ao abrir, os bots tocam um **toque
+subindo** nos dois canais; ao fechar (manual ou automático), um **toque descendo** —
+além do anel verde de fala aceso enquanto estiver ativo.
+
 ## Deploy na VPS
 
 ```bash

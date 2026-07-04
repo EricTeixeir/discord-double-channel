@@ -11,6 +11,7 @@ import prism from 'prism-media';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { PcmMixer, FRAME_BYTES } from './mixer.js';
+import { ON_CUE, OFF_CUE, cueDurationMs } from './cues.js';
 
 const SILENCE_FRAME = Buffer.alloc(FRAME_BYTES);
 
@@ -128,16 +129,25 @@ function wireDirection(botIds, sourceConn, targetConn) {
   // Criar um recurso novo por frame (design anterior) recriava o encoder Opus
   // a cada 20ms — a causa do engasgo e do atraso.
   let output = null;
+  let muteMixUntil = 0; // enquanto o aviso sonoro toca, o mix fica de fora
 
   const startOutput = () => {
     output = new PassThrough();
     player.play(createAudioResource(output, { inputType: StreamType.Raw }));
+    // Aviso de abertura nos dois canais; segura o mix pela duração dele para
+    // o toque sair limpo (perde-se <0,5s do início da fala, imperceptível).
+    output.write(ON_CUE);
+    muteMixUntil = Date.now() + cueDurationMs(ON_CUE);
   };
   const stopOutput = () => {
     const old = output;
     output = null;
-    if (old) old.end();
-    player.stop();
+    if (old) {
+      // Aviso de encerramento: escreve o toque e fecha o stream — o player
+      // toca o que restou e para sozinho (por isso não usamos player.stop()).
+      old.write(OFF_CUE);
+      old.end();
+    }
   };
 
   relayEvents.on('change', (active) => {
@@ -160,6 +170,7 @@ function wireDirection(botIds, sourceConn, targetConn) {
   // relay está ligado — indicador visual de que os times estão se ouvindo.
   const mixer = new PcmMixer((frame) => {
     if (!output) return;
+    if (Date.now() < muteMixUntil) return;
     output.write(frame ?? SILENCE_FRAME);
   });
 
