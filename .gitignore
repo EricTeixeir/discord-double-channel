@@ -1,5 +1,7 @@
 .env
 node_modules/
+# saída do build TypeScript (gerada por npm run build)
+dist/
 # contém o CONTROL_TOKEN embutido — versionar só o .example
 trashtalk.ahk
 trashtalk.exe
